@@ -8,6 +8,7 @@ import 'screens/dashboard_page.dart';
 import 'screens/messages_page.dart';
 import 'screens/maintenance_page.dart';
 import 'screens/home_page.dart';
+import 'screens/notifications_page.dart';
 
 class UserPage extends StatefulWidget {
   final User user;
@@ -275,6 +276,17 @@ class _UserPageState extends State<UserPage> {
                       Navigator.push(context, MaterialPageRoute(builder: (_) => const HomePage()));
                     },
                     icon: Icon(Icons.home, color: Colors.white),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => NotificationsPage(userId: widget.user.id),
+                        ),
+                      );
+                    },
+                    icon: Icon(Icons.notifications_outlined, color: Colors.white),
                   ),
                 ],
               ),

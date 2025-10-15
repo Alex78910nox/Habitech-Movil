@@ -6,7 +6,7 @@ import 'login_page.dart';
 import 'models/qr_model.dart';
 import 'screens/dashboard_page.dart';
 import 'screens/messages_page.dart';
-import 'screens/maintenance_page.dart';
+import 'screens/payments_page.dart';
 import 'screens/home_page.dart';
 import 'screens/notifications_page.dart';
 
@@ -267,9 +267,15 @@ class _UserPageState extends State<UserPage> {
                   ),
                   IconButton(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const MaintenancePage()));
+                      if (widget.user.residente?.id != null) {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => PaymentsPage(residenteId: widget.user.residente!.id)));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('No hay residente asociado a este usuario.')),
+                        );
+                      }
                     },
-                    icon: Icon(Icons.build, color: Colors.white),
+                    icon: Icon(Icons.payment, color: Colors.white),
                   ),
                   IconButton(
                     onPressed: () {

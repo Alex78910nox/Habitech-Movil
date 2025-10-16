@@ -255,7 +255,18 @@ class _UserPageState extends State<UserPage> {
                 children: [
                   IconButton(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const DashboardPage()));
+                      if (widget.user.residente?.departamentoId != null) {
+                        Navigator.push(
+                          context, 
+                          MaterialPageRoute(
+                            builder: (_) => DashboardPage(departamentoId: widget.user.residente!.departamentoId)
+                          )
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('No se encontró información del departamento')),
+                        );
+                      }
                     },
                     icon: Icon(Icons.pie_chart, color: Colors.white),
                   ),

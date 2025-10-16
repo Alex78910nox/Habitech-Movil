@@ -85,7 +85,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               'Mantente informado de todas las novedades',
               style: TextStyle(
                 color: Colors.white.withOpacity(0.7),
-                fontSize: 14,
+                fontSize: 13,
               ),
             ),
           ],
@@ -108,19 +108,55 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
           if (snapshot.hasError) {
             return Center(
-              child: Text(
-                'Error al cargar las notificaciones: ${snapshot.error}',
-                style: const TextStyle(color: Colors.white),
-                textAlign: TextAlign.center,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 64, color: Colors.white.withOpacity(0.7)),
+                  SizedBox(height: 16),
+                  Text(
+                    'Error al cargar las notificaciones',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    '${snapshot.error}',
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             );
           }
 
           if (!snapshot.hasData || snapshot.data!.datos.isEmpty) {
-            return const Center(
-              child: Text(
-                'No hay notificaciones',
-                style: TextStyle(color: Colors.white),
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.notifications_none_outlined,
+                    size: 80,
+                    color: Colors.white.withOpacity(0.5),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'No hay notificaciones',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Aquí aparecerán tus notificaciones',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ],
               ),
             );
           }
@@ -130,109 +166,259 @@ class _NotificationsPageState extends State<NotificationsPage> {
             itemCount: snapshot.data!.datos.length,
             itemBuilder: (context, index) {
               final notification = snapshot.data!.datos[index];
+              final color = _getNotificationColor(notification.tipo);
+              
               return Container(
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.06),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: notification.leido
-                        ? Colors.white24
-                        : _getNotificationColor(notification.tipo),
-                    width: notification.leido ? 1 : 2,
-                  ),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: _getNotificationColor(notification.tipo).withOpacity(0.1),
-                      blurRadius: 8,
+                      color: color.withOpacity(0.15),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                      spreadRadius: 0,
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(20),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
                       onTap: () {
                         // Aquí puedes agregar la funcionalidad para marcar como leída
                       },
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Encabezado con icono y fecha
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: _getNotificationColor(notification.tipo).withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(
-                                    _getNotificationIcon(notification.icono),
-                                    color: _getNotificationColor(notification.tipo),
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        notification.titulo,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: notification.leido ? FontWeight.normal : FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.access_time,
-                                            size: 12,
-                                            color: Colors.white.withOpacity(0.5),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            _formatDateTime(notification.creadoEn),
-                                            style: TextStyle(
-                                              color: Colors.white.withOpacity(0.5),
-                                              fontSize: 12,
-                                            ),
-                                          ),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            left: BorderSide(
+                              color: color,
+                              width: 5,
+                            ),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Encabezado con icono y fecha
+                              Row(
+                                children: [
+                                  // Icono con gradiente
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          color.withOpacity(0.15),
+                                          color.withOpacity(0.05),
                                         ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
                                       ),
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                        color: color.withOpacity(0.2),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      _getNotificationIcon(notification.icono),
+                                      color: color,
+                                      size: 26,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                notification.titulo,
+                                                style: TextStyle(
+                                                  color: HabitechColors.azulOscuro,
+                                                  fontSize: 17,
+                                                  fontWeight: notification.leido 
+                                                      ? FontWeight.w600 
+                                                      : FontWeight.bold,
+                                                  letterSpacing: -0.3,
+                                                ),
+                                              ),
+                                            ),
+                                            if (!notification.leido)
+                                              Container(
+                                                margin: const EdgeInsets.only(left: 8),
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 4,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: color,
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: color.withOpacity(0.4),
+                                                      blurRadius: 4,
+                                                      spreadRadius: 1,
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: const Text(
+                                                  'NUEVA',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                    letterSpacing: 0.5,
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.schedule,
+                                              size: 14,
+                                              color: Colors.grey[500],
+                                            ),
+                                            const SizedBox(width: 5),
+                                            Text(
+                                              _formatDateTime(notification.creadoEn),
+                                              style: TextStyle(
+                                                color: Colors.grey[600],
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              
+                              const SizedBox(height: 16),
+                              
+                              // Separador
+                              Container(
+                                height: 1,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      color.withOpacity(0.1),
+                                      color.withOpacity(0.05),
+                                      Colors.transparent,
                                     ],
                                   ),
                                 ),
-                                if (!notification.leido)
+                              ),
+                              
+                              const SizedBox(height: 14),
+                              
+                              // Mensaje con mejor formato
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[50],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  notification.mensaje,
+                                  style: TextStyle(
+                                    color: Colors.grey[800],
+                                    fontSize: 15,
+                                    height: 1.6,
+                                    letterSpacing: 0.1,
+                                  ),
+                                ),
+                              ),
+                              
+                              const SizedBox(height: 14),
+                              
+                              // Footer con badge de tipo
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
                                   Container(
-                                    width: 8,
-                                    height: 8,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: _getNotificationColor(notification.tipo),
-                                      shape: BoxShape.circle,
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          color.withOpacity(0.15),
+                                          color.withOpacity(0.08),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: color.withOpacity(0.3),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          width: 6,
+                                          height: 6,
+                                          decoration: BoxDecoration(
+                                            color: color,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          notification.tipo.toUpperCase(),
+                                          style: TextStyle(
+                                            color: color,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.8,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            // Mensaje
-                            Text(
-                              notification.mensaje,
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
-                                fontSize: 14,
-                                height: 1.4,
+                                  if (notification.leido)
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.check_circle,
+                                          size: 16,
+                                          color: Colors.grey[400],
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'Leída',
+                                          style: TextStyle(
+                                            color: Colors.grey[500],
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                ],
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),

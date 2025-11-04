@@ -91,8 +91,8 @@ class _PaymentsPageState extends State<PaymentsPage> {
       
       final data = json.decode(response.body);
       if (data['exito'] == true && data['clientSecret'] != null) {
-        // Mostrar formulario de pago de Stripe
-        await mostrarFormularioPago(data['clientSecret']);
+        // Mostrar formulario de pago de Stripe y pasar el ID del pago
+        await mostrarFormularioPago(data['clientSecret'], pago['id']);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${data['mensaje'] ?? 'No se pudo crear el pago'}')),
@@ -106,7 +106,7 @@ class _PaymentsPageState extends State<PaymentsPage> {
     }
   }
 
-  Future<void> mostrarFormularioPago(String clientSecret) async {
+  Future<void> mostrarFormularioPago(String clientSecret, int pagoId) async {
     try {
       await stripe.Stripe.instance.initPaymentSheet(
         paymentSheetParameters: stripe.SetupPaymentSheetParameters(
@@ -118,16 +118,86 @@ class _PaymentsPageState extends State<PaymentsPage> {
       
       await stripe.Stripe.instance.presentPaymentSheet();
       
+      // Si el pago fue exitoso, actualizar el estado en el backend
+      await actualizarEstadoPago(pagoId);
+      
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('¡Pago completado exitosamente!')),
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white),
+              SizedBox(width: 12),
+              Text('¡Pago completado exitosamente!'),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 3),
+        ),
       );
       
       // Recargar pagos para ver el cambio de estado
       fetchPagos();
-    } catch (e) {
+    } on stripe.StripeException catch (e) {
+      // Error específico de Stripe (usuario canceló o error de tarjeta)
+      String mensaje = 'Pago cancelado';
+      
+      if (e.error.code == stripe.FailureCode.Canceled) {
+        mensaje = 'Pago cancelado. Puedes intentarlo de nuevo cuando quieras.';
+      } else if (e.error.localizedMessage != null) {
+        mensaje = 'Error: ${e.error.localizedMessage}';
+      }
+      
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Pago cancelado o error: $e')),
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.white),
+              SizedBox(width: 12),
+              Expanded(child: Text(mensaje)),
+            ],
+          ),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 3),
+        ),
       );
+    } catch (e) {
+      // Otros errores
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.white),
+              SizedBox(width: 12),
+              Expanded(child: Text('Error inesperado: $e')),
+            ],
+          ),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  Future<void> actualizarEstadoPago(int pagoId) async {
+    try {
+      final url = Uri.parse('https://apitaller.onrender.com/api/pagos/$pagoId/estado');
+      final response = await http.put(
+        url,
+        body: json.encode({
+          'estado': 'pagado',
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        print('Estado del pago actualizado correctamente');
+      } else {
+        print('Error al actualizar estado: ${response.statusCode}');
+        print('Response: ${response.body}');
+      }
+    } catch (e) {
+      print('Error al actualizar estado del pago: $e');
+      // No mostramos error al usuario ya que el pago sí se procesó
     }
   }
 
@@ -159,7 +229,13 @@ class _PaymentsPageState extends State<PaymentsPage> {
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Monto: ${pago['monto']}'),
+                                Text('Monto: Bs ${pago['monto']}', 
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                    color: Colors.green[700],
+                                  ),
+                                ),
                                 Text('Descripción: ${getDescripcion(pago)}'),
                                 Text('Vence: ${pago['fecha_vencimiento']?.substring(0,10) ?? ''}'),
                                 if (pago['estado'] == 'pendiente')

@@ -31,7 +31,7 @@ class NotificationData {
   final String tipo;
   final dynamic idRelacionado;
   final String icono;
-  final String urlAccion;
+  final String? urlAccion;
   final bool leido;
   final DateTime? leidoEn;
   final DateTime creadoEn;
@@ -44,7 +44,7 @@ class NotificationData {
     required this.tipo,
     this.idRelacionado,
     required this.icono,
-    required this.urlAccion,
+    this.urlAccion,
     required this.leido,
     this.leidoEn,
     required this.creadoEn,
@@ -54,30 +54,38 @@ class NotificationData {
     return NotificationData(
       id: json['id'] as int,
       usuarioId: json['usuario_id'] as int,
-      titulo: json['titulo'] as String,
-      mensaje: json['mensaje'] as String,
-      tipo: json['tipo'] as String,
+      titulo: json['titulo'] as String? ?? 'Sin título',
+      mensaje: json['mensaje'] as String? ?? 'Sin mensaje',
+      tipo: json['tipo'] as String? ?? 'anuncio',
       idRelacionado: json['id_relacionado'],
-      icono: json['icono'] as String,
-      urlAccion: json['url_accion'] as String,
-      leido: json['leido'] as bool,
-      leidoEn: json['leido_en'] != null ? DateTime.parse(json['leido_en']) : null,
-      creadoEn: DateTime.parse(json['creado_en']),
+      icono: json['icono'] as String? ?? 'info',
+      urlAccion: json['url_accion'] as String?,
+      leido: json['leido'] as bool? ?? false,
+      leidoEn: json['leido_en'] != null ? DateTime.parse(json['leido_en'] as String) : null,
+      creadoEn: json['creado_en'] != null 
+          ? DateTime.parse(json['creado_en'] as String)
+          : DateTime.now(),
     );
   }
 }
 
 Future<NotificationResponse> getUserNotifications(String userId) async {
-  final response = await http.get(
-    Uri.parse('https://apitaller.onrender.com/api/notificaciones/usuario/$userId'),
-    headers: <String, String>{
-      'Content-Type': 'application/json',
-    },
-  );
+  try {
+    final response = await http.get(
+      Uri.parse('https://apitaller.onrender.com/api/notificaciones/usuario/$userId'),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+    );
 
-  if (response.statusCode == 200) {
-    return NotificationResponse.fromJson(json.decode(response.body));
-  } else {
-    throw Exception('Error al obtener las notificaciones');
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      return NotificationResponse.fromJson(jsonData);
+    } else {
+      throw Exception('Error del servidor: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Error al obtener notificaciones: $e');
+    throw Exception('Error al obtener las notificaciones: $e');
   }
 }

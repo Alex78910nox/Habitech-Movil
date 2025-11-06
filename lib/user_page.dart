@@ -7,8 +7,8 @@ import 'models/qr_model.dart';
 import 'screens/dashboard_page.dart';
 import 'screens/messages_page.dart';
 import 'screens/payments_page.dart';
-import 'screens/home_page.dart';
 import 'screens/notifications_page.dart';
+import 'screens/reservas_areas_page.dart';
 
 class UserPage extends StatefulWidget {
   final User user;
@@ -290,9 +290,20 @@ class _UserPageState extends State<UserPage> {
                   ),
                   IconButton(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const HomePage()));
+                      if (widget.user.residente?.id != null) {
+                        Navigator.push(
+                          context, 
+                          MaterialPageRoute(
+                            builder: (_) => ReservasAreasPage(residenteId: widget.user.residente!.id)
+                          )
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('No hay residente asociado a este usuario')),
+                        );
+                      }
                     },
-                    icon: Icon(Icons.home, color: Colors.white),
+                    icon: Icon(Icons.event_available, color: Colors.white),
                   ),
                   IconButton(
                     onPressed: () {
